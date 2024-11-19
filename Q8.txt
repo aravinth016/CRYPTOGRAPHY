@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function to remove duplicate characters from the keyword
+void removeDuplicates(char *key) {
+    int length = strlen(key);
+    for (int i = 0; i < length; i++) {
+        for (int j = i + 1; j < length; j++) {
+            if (key[i] == key[j]) {
+                // Shift all characters to the left to remove duplicates
+                for (int k = j; k < length; k++) {
+                    key[k] = key[k + 1];
+                }
+                length--;
+                j--;
+            }
+        }
+    }
+}
+
+// Function to create the cipher alphabet using the keyword
+void createCipherAlphabet(char *key, char *cipherAlphabet) {
+    int used[26] = {0};  // To track used letters (A-Z)
+    int k = 0;
+
+    // Step 1: Add the letters from the keyword
+    for (int i = 0; key[i] != '\0'; i++) {
+        if (!used[key[i] - 'A']) {  // If the letter is not used
+            cipherAlphabet[k++] = key[i];
+            used[key[i] - 'A'] = 1;
+        }
+    }
+
+    // Step 2: Add remaining unused letters of the alphabet
+    for (char c = 'A'; c <= 'Z'; c++) {
+        if (!used[c - 'A']) {  // If the letter is not used
+            cipherAlphabet[k++] = c;
+        }
+    }
+    cipherAlphabet[k] = '\0';  // Null-terminate the string
+}
+
+// Function to encrypt the plaintext using the cipher alphabet
+void encryptMessage(char *plaintext, char *cipherAlphabet, char *encrypted) {
+    for (int i = 0; plaintext[i] != '\0'; i++) {
+        char c = toupper(plaintext[i]);
+        if (isalpha(c)) {
+            // Find the corresponding letter in the cipher alphabet
+            encrypted[i] = cipherAlphabet[c - 'A'];
+        } else {
+            encrypted[i] = plaintext[i];  // Non-alphabetic characters remain unchanged
+        }
+    }
+    encrypted[strlen(plaintext)] = '\0';  // Null-terminate the string
+}
+
+int main() {
+    char plaintext[100], encrypted[100], key[] = "CIPHER";
+    char cipherAlphabet[26 + 1];  // 26 letters in the alphabet + null terminator
+    
+    // Input plaintext
+    printf("Enter the plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    
+    // Remove newline character if present
+    plaintext[strcspn(plaintext, "\n")] = '\0';
+
+    // Remove duplicate characters from the keyword and create cipher alphabet
+    removeDuplicates(key);
+    createCipherAlphabet(key, cipherAlphabet);
+
+    // Encrypt the message
+    encryptMessage(plaintext, cipherAlphabet, encrypted);
+
+    // Output the encrypted message
+    printf("Encrypted Message: %s\n", encrypted);
+
+    return 0;
+}

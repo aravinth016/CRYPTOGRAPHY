@@ -1,0 +1,235 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function to create the Playfair matrix
+void generateMatrix(char *key, char matrix[5][5]) {
+    int used[26] = {0};  // To track used letters (A-Z)
+    int k = 0;
+
+    // Step 1: Add the letters from the key
+    for (int i = 0; key[i] != '\0'; i++) {
+        char c = toupper(key[i]);
+        if (c == 'J') c = 'I'; // Treat 'J' as 'I'
+        if (!used[c - 'A']) {
+            matrix[k / 5][k % 5] = c;
+            used[c - 'A'] = 1;
+            k++;
+        }
+    }
+
+    // Step 2: Add remaining unused letters of the alphabet
+    for (char c = 'A'; c <= 'Z'; c++) {
+        if (!used[c - 'A']) {
+            if (c == 'J') continue;  // Skip 'J' (already treated as 'I')
+            matrix[k / 5][k % 5] = c;
+            k++;
+        }
+    }
+}
+
+// Function to print the Playfair matrix for debugging
+void printMatrix(char matrix[5][5]) {
+    printf("Playfair Matrix:\n");
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            printf("%c ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// Function to find the position of a letter in the Playfair matrix
+void findPosition(char letter, char matrix[5][5], int *row, int *col) {
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (matrix[i][j] == letter) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+// Function to decrypt a pair of letters
+void decryptPair(char a, char b, char matrix[5][5], char *decryptedA, char *decryptedB) {
+    int rowA, colA, rowB, colB;
+    findPosition(a, matrix, &rowA, &colA);
+    findPosition(b, matrix, &rowB, &colB);
+
+    if (rowA == rowB) {
+        // Same row: Take the letters to the left (circular)
+        *decryptedA = matrix[rowA][(colA - 1 + 5) % 5];
+        *decryptedB = matrix[rowB][(colB - 1 + 5) % 5];
+    } else if (colA == colB) {
+        // Same column: Take the letters above (circular)
+        *decryptedA = matrix[(rowA - 1 + 5) % 5][colA];
+        *decryptedB = matrix[(rowB - 1 + 5) % 5][colB];
+    } else {
+        // Rectangle: Swap the corners
+        *decryptedA = matrix[rowA][colB];
+        *decryptedB = matrix[rowB][colA];
+    }
+}
+
+// Function to decrypt the ciphertext
+void decryptMessage(char *ciphertext, char *decrypted, char matrix[5][5]) {
+    int i = 0, j = 0;
+    while (ciphertext[i] != '\0') {
+        char a = toupper(ciphertext[i]);
+        char b = toupper(ciphertext[i + 1]);
+        decryptPair(a, b, matrix, &decrypted[j], &decrypted[j + 1]);
+        i += 2;
+        j += 2;
+    }
+    decrypted[j] = '\0'; // Null-terminate the decrypted string
+}
+
+int main() {
+    char ciphertext[] = "KXJEY UREBE ZWEHE WRYTU HEYFS KREHE GOYFI WTTTU OLKSY CAJPO BOTEI ZONTX BYBNT GONEY CUZWR GDSON SXBOU YWRHE BAAHY USEDQ";
+    char decrypted[100];
+    char key[] = "CIPHER";  // Key to generate the Playfair matrix
+    char matrix[5][5];
+
+    // Generate the Playfair matrix using the key
+    generateMatrix(key, matrix);
+    
+    // Print the matrix for debugging
+    printMatrix(matrix);
+
+    // Decrypt the ciphertext
+    decryptMessage(ciphertext, decrypted, matrix);
+
+    // Output the decrypted message
+    printf("Decrypted Message: %s\n", decrypted);
+
+    return 0;
+}
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function to create the Playfair matrix
+void generateMatrix(char *key, char matrix[5][5]) {
+    int used[26] = {0};  // To track used letters (A-Z)
+    int k = 0;
+
+    // Step 1: Add the letters from the key
+    for (int i = 0; key[i] != '\0'; i++) {
+        char c = toupper(key[i]);
+        if (c == 'J') c = 'I'; // Treat 'J' as 'I'
+        if (!used[c - 'A']) {
+            matrix[k / 5][k % 5] = c;
+            used[c - 'A'] = 1;
+            k++;
+        }
+    }
+
+    // Step 2: Add remaining unused letters of the alphabet
+    for (char c = 'A'; c <= 'Z'; c++) {
+        if (!used[c - 'A']) {
+            if (c == 'J') continue;  // Skip 'J' (already treated as 'I')
+            matrix[k / 5][k % 5] = c;
+            k++;
+        }
+    }
+}
+
+// Function to print the Playfair matrix for debugging
+void printMatrix(char matrix[5][5]) {
+    printf("Playfair Matrix:\n");
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            printf("%c ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// Function to find the position of a letter in the Playfair matrix
+void findPosition(char letter, char matrix[5][5], int *row, int *col) {
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (matrix[i][j] == letter) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+// Function to encrypt a pair of letters
+void encryptPair(char a, char b, char matrix[5][5], char *encryptedA, char *encryptedB) {
+    int rowA, colA, rowB, colB;
+    findPosition(a, matrix, &rowA, &colA);
+    findPosition(b, matrix, &rowB, &colB);
+
+    if (rowA == rowB) {
+        // Same row: Take the letters to the right (circular)
+        *encryptedA = matrix[rowA][(colA + 1) % 5];
+        *encryptedB = matrix[rowB][(colB + 1) % 5];
+    } else if (colA == colB) {
+        // Same column: Take the letters below (circular)
+        *encryptedA = matrix[(rowA + 1) % 5][colA];
+        *encryptedB = matrix[(rowB + 1) % 5][colB];
+    } else {
+        // Rectangle: Swap the corners
+        *encryptedA = matrix[rowA][colB];
+        *encryptedB = matrix[rowB][colA];
+    }
+}
+
+// Function to preprocess the message
+void preprocessMessage(char *message, char *processed) {
+    int j = 0;
+    for (int i = 0; message[i] != '\0'; i++) {
+        char c = toupper(message[i]);
+        if (isalpha(c)) {
+            processed[j++] = c;
+        }
+    }
+
+    // If the message length is odd, add an 'X' at the end
+    if (j % 2 != 0) {
+        processed[j++] = 'X';
+    }
+
+    processed[j] = '\0'; // Null-terminate the string
+}
+
+// Function to encrypt the message
+void encryptMessage(char *message, char *encrypted, char matrix[5][5]) {
+    int i = 0, j = 0;
+    while (message[i] != '\0') {
+        char a = message[i];
+        char b = message[i + 1];
+        encryptPair(a, b, matrix, &encrypted[j], &encrypted[j + 1]);
+        i += 2;
+        j += 2;
+    }
+    encrypted[j] = '\0'; // Null-terminate the encrypted string
+}
+
+int main() {
+    char message[] = "Must see you over Cadogan West. Coming at once.";
+    char encrypted[100];
+    char matrix[5][5];
+    char processed[100];
+
+    // Define the key and generate the Playfair matrix
+    char key[] = "MFHIJKUNO PQZVWXYEL ARGDSTBC";  // Given key
+    generateMatrix(key, matrix);
+
+    // Preprocess the message
+    preprocessMessage(message, processed);
+
+    // Encrypt the message
+    encryptMessage(processed, encrypted, matrix);
+
+    // Output the encrypted message
+    printf("Encrypted Message: %s\n", encrypted);
+
+    return 0;
+}
