@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+
+void generateCipherAlphabet(char cipherAlphabet[]);
+void encryptText(const char plaintext[], char ciphertext[], const char cipherAlphabet[]);
+void decryptText(const char ciphertext[], char decrypted[], const char cipherAlphabet[]);
+
+int main() {
+    char plaintext[100], ciphertext[100], decrypted[100];
+    char cipherAlphabet[26];
+
+    
+    generateCipherAlphabet(cipherAlphabet);
+
+
+    printf("Enter the plaintext (only alphabetic characters): ");
+    scanf("%s", plaintext);
+
+   
+    encryptText(plaintext, ciphertext, cipherAlphabet);
+    printf("Ciphertext: %s\n", ciphertext);
+
+  
+    decryptText(ciphertext, decrypted, cipherAlphabet);
+    printf("Decrypted Text: %s\n", decrypted);
+
+    return 0;
+}
+
+
+void generateCipherAlphabet(char cipherAlphabet[]) {
+    int i, used[26] = {0};
+    char letter;
+
+   
+    for (i = 0; i < 26; i++) {
+        do {
+            letter = 'A' + (rand() % 26); // Random letter
+        } while (used[letter - 'A']);   // Ensure no repetition
+        cipherAlphabet[i] = letter;
+        used[letter - 'A'] = 1;
+    }
+  
+    printf("Cipher Alphabet: ");
+    for (i = 0; i < 26; i++) {
+        printf("%c ", cipherAlphabet[i]);
+    }
+    printf("\n");
+}
+
+// Function to encrypt plaintext using the cipher alphabet
+void encryptText(const char plaintext[], char ciphertext[], const char cipherAlphabet[]) {
+    int i;
+    for (i = 0; plaintext[i] != '\0'; i++) {
+        char c = toupper(plaintext[i]);
+        if (c >= 'A' && c <= 'Z') {
+            ciphertext[i] = cipherAlphabet[c - 'A'];
+        } else {
+            ciphertext[i] = plaintext[i]; // Preserve non-alphabetic characters
+        }
+    }
+    ciphertext[i] = '\0';
+}
+
+// Function to decrypt ciphertext using the cipher alphabet
+void decryptText(const char ciphertext[], char decrypted[], const char cipherAlphabet[]) {
+    int i, j;
+    for (i = 0; ciphertext[i] != '\0'; i++) {
+        char c = toupper(ciphertext[i]);
+        if (c >= 'A' && c <= 'Z') {
+            // Find the corresponding plaintext letter
+            for (j = 0; j < 26; j++) {
+                if (cipherAlphabet[j] == c) {
+                    decrypted[i] = 'A' + j;
+                    break;
+                }
+            }
+        } else {
+            decrypted[i] = ciphertext[i]; // Preserve non-alphabetic characters
+        }
+    }
+    decrypted[i] = '\0';
+}

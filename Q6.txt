@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function prototypes
+int gcd(int a, int b);
+int modInverse(int a, int m);
+void affineDecrypt(const char ciphertext[], char decrypted[], int a, int b);
+
+int main() {
+    char ciphertext[100], decrypted[100];
+    int a, b, aInverse;
+
+    // Ciphertext input
+    printf("Enter the ciphertext: ");
+    scanf("%s", ciphertext);
+
+    // Most frequent letter mapping
+    int C1 = 1; // B -> 1
+    int P1 = 4; // E -> 4
+    int C2 = 20; // U -> 20
+    int P2 = 19; // T -> 19
+
+    // Solve for a and b
+    int deltaC = (C2 - C1 + 26) % 26; // 20 - 1 = 19
+    int deltaP = (P2 - P1 + 26) % 26; // 19 - 4 = 15
+
+    // Find a using modular inverse
+    a = (deltaC * modInverse(deltaP, 26)) % 26;
+    if (gcd(a, 26) != 1) {
+        printf("Decryption failed: Invalid value of 'a'.\n");
+        return 1;
+    }
+
+    // Calculate b
+    b = (C1 - a * P1 + 26) % 26;
+
+    // Modular inverse of a for decryption
+    aInverse = modInverse(a, 26);
+
+    // Decrypt the ciphertext
+    affineDecrypt(ciphertext, decrypted, aInverse, b);
+    printf("Decrypted Text: %s\n", decrypted);
+
+    return 0;
+}
+
+// Function to calculate GCD
+int gcd(int a, int b) {
+    while (b != 0) {
+        int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+// Function to calculate modular multiplicative inverse
+int modInverse(int a, int m) {
+    for (int x = 1; x < m; x++) {
+        if ((a * x) % m == 1)
+            return x;
+    }
+    return -1; // No inverse exists
+}
+
+// Function to decrypt using the affine cipher
+void affineDecrypt(const char ciphertext[], char decrypted[], int aInverse, int b) {
+    int i;
+    for (i = 0; ciphertext[i] != '\0'; i++) {
+        char c = toupper(ciphertext[i]);
+        if (isalpha(c)) {
+            decrypted[i] = (aInverse * ((c - 'A' - b + 26) % 26)) % 26 + 'A';
+        } else {
+            decrypted[i] = ciphertext[i]; // Preserve non-alphabetic characters
+        }
+    }
+    decrypted[i] = '\0';
+}

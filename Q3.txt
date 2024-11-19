@@ -1,0 +1,137 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define SIZE 5
+
+// Function prototypes
+void createMatrix(char key[], char matrix[SIZE][SIZE]);
+void preprocessPlaintext(char plaintext[], char processed[]);
+void findPosition(char matrix[SIZE][SIZE], char letter, int *row, int *col);
+void encryptPair(char matrix[SIZE][SIZE], char a, char b, char *enc1, char *enc2);
+void playfairEncrypt(char plaintext[], char key[], char ciphertext[]);
+
+int main() {
+    char key[50], plaintext[100], ciphertext[100];
+
+    // Input the keyword and plaintext
+    printf("Enter the keyword: ");
+    scanf("%s", key);
+    printf("Enter the plaintext: ");
+    scanf("%s", plaintext);
+
+    // Encrypt the plaintext using Playfair cipher
+    playfairEncrypt(plaintext, key, ciphertext);
+
+    // Display the resulting ciphertext
+    printf("Ciphertext: %s\n", ciphertext);
+
+    return 0;
+}
+
+// Function to create the Playfair matrix
+void createMatrix(char key[], char matrix[SIZE][SIZE]) {
+    int used[26] = {0}; // Tracks used letters
+    int i, j, k = 0;
+    char c;
+
+    // Convert key to uppercase and remove duplicates
+    for (i = 0; key[i]; i++)
+        key[i] = toupper(key[i]);
+
+    // Fill the matrix with letters from the key
+    for (i = 0; i < SIZE; i++) {
+        for (j = 0; j < SIZE; j++) {
+            while (key[k] && used[key[k] - 'A']) k++;
+            if (key[k]) {
+                c = key[k++];
+            } else {
+                for (c = 'A'; used[c - 'A'] || c == 'J'; c++);
+            }
+            matrix[i][j] = c;
+            used[c - 'A'] = 1;
+        }
+    }
+}
+
+// Function to preprocess the plaintext
+void preprocessPlaintext(char plaintext[], char processed[]) {
+    int i, j = 0;
+    char prev = '\0';
+
+    // Process each character of the plaintext
+    for (i = 0; plaintext[i]; i++) {
+        char c = toupper(plaintext[i]);
+        if (c < 'A' || c > 'Z') continue; // Ignore non-alphabetic characters
+        if (c == 'J') c = 'I';           // Replace 'J' with 'I'
+
+        if (c == prev) {
+            processed[j++] = prev;
+            processed[j++] = 'X';        // Insert 'X' between repeating letters
+            prev = '\0';
+        } else {
+            if (prev) processed[j++] = prev;
+            prev = c;
+        }
+    }
+    if (prev) processed[j++] = prev;
+    if (j % 2) processed[j++] = 'X';    // Add padding if needed
+    processed[j] = '\0';
+}
+
+// Function to find the position of a letter in the matrix
+void findPosition(char matrix[SIZE][SIZE], char letter, int *row, int *col) {
+    int i, j;
+    for (i = 0; i < SIZE; i++) {
+        for (j = 0; j < SIZE; j++) {
+            if (matrix[i][j] == letter) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+// Function to encrypt a pair of letters
+void encryptPair(char matrix[SIZE][SIZE], char a, char b, char *enc1, char *enc2) {
+    int row1, col1, row2, col2;
+
+    findPosition(matrix, a, &row1, &col1);
+    findPosition(matrix, b, &row2, &col2);
+
+    if (row1 == row2) {
+        // Same row: shift right
+        *enc1 = matrix[row1][(col1 + 1) % SIZE];
+        *enc2 = matrix[row2][(col2 + 1) % SIZE];
+    } else if (col1 == col2) {
+        // Same column: shift down
+        *enc1 = matrix[(row1 + 1) % SIZE][col1];
+        *enc2 = matrix[(row2 + 1) % SIZE][col2];
+    } else {
+        // Rectangle swap
+        *enc1 = matrix[row1][col2];
+        *enc2 = matrix[row2][col1];
+    }
+}
+
+// Function to encrypt the plaintext using Playfair cipher
+void playfairEncrypt(char plaintext[], char key[], char ciphertext[]) {
+    char matrix[SIZE][SIZE], processed[100];
+    int i, j = 0;
+
+    // Create the Playfair matrix
+    createMatrix(key, matrix);
+
+    // Preprocess the plaintext
+    preprocessPlaintext(plaintext, processed);
+
+    // Encrypt each pair of letters
+    for (i = 0; processed[i] && processed[i + 1]; i += 2) {
+        char enc1, enc2;
+        encryptPair(matrix, processed[i], processed[i + 1], &enc1, &enc2);
+        ciphertext[j++] = enc1;
+        ciphertext[j++] = enc2;
+    }
+    ciphertext[j] = '\0';
+}
