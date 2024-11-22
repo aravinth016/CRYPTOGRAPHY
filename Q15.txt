@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+// Function to calculate letter frequencies in the ciphertext
+void calculate_frequencies(const char *ciphertext, int freq[26]) {
+    for (int i = 0; i < 26; i++) {
+        freq[i] = 0; // Initialize frequency array
+    }
+
+    for (int i = 0; ciphertext[i] != '\0'; i++) {
+        if (ciphertext[i] >= 'a' && ciphertext[i] <= 'z') {
+            freq[ciphertext[i] - 'a']++;
+        } else if (ciphertext[i] >= 'A' && ciphertext[i] <= 'Z') {
+            freq[ciphertext[i] - 'A']++;
+        }
+    }
+}
+
+// Function to decrypt the ciphertext with a given key
+void decrypt_with_key(const char *ciphertext, int key, char *plaintext) {
+    for (int i = 0; ciphertext[i] != '\0'; i++) {
+        if (ciphertext[i] >= 'a' && ciphertext[i] <= 'z') {
+            plaintext[i] = ((ciphertext[i] - 'a' - key + 26) % 26) + 'a';
+        } else if (ciphertext[i] >= 'A' && ciphertext[i] <= 'Z') {
+            plaintext[i] = ((ciphertext[i] - 'A' - key + 26) % 26) + 'A';
+        } else {
+            plaintext[i] = ciphertext[i]; // Preserve non-alphabetic characters
+        }
+    }
+    plaintext[strlen(ciphertext)] = '\0'; // Null-terminate the string
+}
+
+// Function to perform letter frequency attack and display the top N plaintexts
+void frequency_attack(const char *ciphertext, int top_n) {
+    int freq[26], max_freq_index, key;
+    char plaintext[1000];
+
+    // Calculate letter frequencies in the ciphertext
+    calculate_frequencies(ciphertext, freq);
+
+    // Determine the most frequent letter in the ciphertext
+    int max_freq = 0;
+    max_freq_index = 0;
+    for (int i = 0; i < 26; i++) {
+        if (freq[i] > max_freq) {
+            max_freq = freq[i];
+            max_freq_index = i;
+        }
+    }
+
+    // Assume the most frequent letter maps to 'E' (or 'e')
+    int most_frequent_letter = max_freq_index;
+
+    printf("Top %d Possible Plaintexts:\n", top_n);
+    for (int i = 0; i < top_n; i++) {
+        key = (most_frequent_letter - i + 26) % 26; // Guessing different keys
+        decrypt_with_key(ciphertext, key, plaintext);
+        printf("%d. Key = %d: %s\n", i + 1, key, plaintext);
+    }
+}
+
+int main() {
+    char ciphertext[1000];
+    int top_n;
+
+    // Input ciphertext
+    printf("Enter the ciphertext: ");
+    fgets(ciphertext, sizeof(ciphertext), stdin);
+    ciphertext[strcspn(ciphertext, "\n")] = '\0'; // Remove newline character
+
+    // Input number of top guesses
+    printf("Enter the number of top guesses to display: ");
+    scanf("%d", &top_n);
+
+    // Perform letter frequency attack
+    frequency_attack(ciphertext, top_n);
+
+    return 0;
+}

@@ -1,0 +1,42 @@
+#include <stdio.h>
+
+void hill_encrypt(int plaintext[], int ciphertext[], int key[2][2], int len) {
+    for (int i = 0; i < len; i += 2) {
+        ciphertext[i] = (key[0][0] * plaintext[i] + key[0][1] * plaintext[i + 1]) % 26;
+        ciphertext[i + 1] = (key[1][0] * plaintext[i] + key[1][1] * plaintext[i + 1]) % 26;
+    }
+}
+
+void hill_decrypt(int ciphertext[], int plaintext[], int inverse_key[2][2], int len) {
+    for (int i = 0; i < len; i += 2) {
+        plaintext[i] = (inverse_key[0][0] * ciphertext[i] + inverse_key[0][1] * ciphertext[i + 1]) % 26;
+        plaintext[i + 1] = (inverse_key[1][0] * ciphertext[i] + inverse_key[1][1] * ciphertext[i + 1]) % 26;
+    }
+}
+
+int main() {
+    int key[2][2] = {{9, 4}, {5, 7}};
+    int inverse_key[2][2] = {{5, 12}, {15, 1}};
+
+    int plaintext[] = {12, 4, 4, 19, 12, 4, 0, 19, 19, 7, 4, 20, 18, 20, 0, 11, 15, 11, 0, 2, 4, 0, 19, 19, 4, 13};
+    int ciphertext[26];
+    int decrypted[26];
+
+    int len = sizeof(plaintext) / sizeof(plaintext[0]);
+
+    hill_encrypt(plaintext, ciphertext, key, len);
+    printf("Ciphertext: ");
+    for (int i = 0; i < len; i++) {
+        printf("%c", ciphertext[i] + 'A');
+    }
+    printf("\n");
+
+    hill_decrypt(ciphertext, decrypted, inverse_key, len);
+    printf("Decrypted text: ");
+    for (int i = 0; i < len; i++) {
+        printf("%c", decrypted[i] + 'A');
+    }
+    printf("\n");
+
+    return 0;
+}

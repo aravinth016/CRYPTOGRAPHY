@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <string.h>
+
+// Function to encrypt the plaintext using the one-time pad Vigenère cipher
+void encrypt(char plaintext[], int key[], char ciphertext[], int len) {
+    for (int i = 0; i < len; i++) {
+        if (plaintext[i] >= 'a' && plaintext[i] <= 'z') {
+            ciphertext[i] = ((plaintext[i] - 'a' + key[i]) % 26) + 'a';
+        } else if (plaintext[i] >= 'A' && plaintext[i] <= 'Z') {
+            ciphertext[i] = ((plaintext[i] - 'A' + key[i]) % 26) + 'A';
+        } else {
+            ciphertext[i] = plaintext[i]; // Handle spaces or other characters
+        }
+    }
+    ciphertext[len] = '\0';
+}
+
+// Function to decrypt the ciphertext using the one-time pad Vigenère cipher
+void decrypt(char ciphertext[], int key[], char plaintext[], int len) {
+    for (int i = 0; i < len; i++) {
+        if (ciphertext[i] >= 'a' && ciphertext[i] <= 'z') {
+            plaintext[i] = ((ciphertext[i] - 'a' - key[i] + 26) % 26) + 'a';
+        } else if (ciphertext[i] >= 'A' && ciphertext[i] <= 'Z') {
+            plaintext[i] = ((ciphertext[i] - 'A' - key[i] + 26) % 26) + 'A';
+        } else {
+            plaintext[i] = ciphertext[i]; // Handle spaces or other characters
+        }
+    }
+    plaintext[len] = '\0';
+}
+
+int main() {
+    char plaintext[] = "send more money";
+    int key[] = {9, 0, 1, 7, 23, 15, 21, 14, 11, 11, 2, 8, 9};
+    char ciphertext[50];
+    char decryptedtext[50];
+
+    int len = strlen(plaintext);
+
+    // Encrypt the plaintext
+    encrypt(plaintext, key, ciphertext, len);
+    printf("Ciphertext: %s\n", ciphertext);
+
+    // Decrypt the ciphertext
+    decrypt(ciphertext, key, decryptedtext, len);
+    printf("Decrypted text: %s\n", decryptedtext);
+
+    return 0;
+}
